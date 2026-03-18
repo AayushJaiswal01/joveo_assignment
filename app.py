@@ -18,7 +18,7 @@ from langchain.chains import create_history_aware_retriever, create_retrieval_ch
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
 os.environ["USER_AGENT"] = "MyGitLabChatBot/1.0"
-GEMINI_API_KEY = "AIzaSyDfZAjIPSDH_7VzO2OY-FqSOtcNqOtXyvE" 
+GEMINI_API_KEY = os.environ.get("GOOGLE_API_KEY")
 os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
 
 GITLAB_URLS =[
