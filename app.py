@@ -1,9 +1,7 @@
-#AIzaSyDfZAjIPSDH_7VzO2OY-FqSOtcNqOtXyvE
 import streamlit as st
 import os
 import asyncio
 
-# --- ASYNC FIX ---
 try:
     asyncio.get_running_loop()
 except RuntimeError:
@@ -19,9 +17,8 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
-# --- CONFIGURATION ---
 os.environ["USER_AGENT"] = "MyGitLabChatBot/1.0"
-GEMINI_API_KEY = "AIzaSyDfZAjIPSDH_7VzO2OY-FqSOtcNqOtXyvE" # <--- PUT YOUR KEY HERE
+GEMINI_API_KEY = "AIzaSyDfZAjIPSDH_7VzO2OY-FqSOtcNqOtXyvE" 
 os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
 
 GITLAB_URLS =[
@@ -32,7 +29,6 @@ GITLAB_URLS =[
 
 st.set_page_config(page_title="GitLab Employee Assistant", page_icon="🦊", layout="wide")
 
-# --- UX BONUS: Sidebar Navigation ---
 with st.sidebar:
     st.image("https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png", width=50)
     st.title("GitLab Assistant")
@@ -42,9 +38,8 @@ with st.sidebar:
         st.session_state.chat_history =[]
         st.rerun()
 
-st.title("🦊 GitLab Handbook Assistant")
+st.title("GitLab Handbook Assistant")
 
-# --- DATA PROCESSING ---
 @st.cache_resource
 def get_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
@@ -63,10 +58,8 @@ def get_vector_store():
 vectorstore = get_vector_store()
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-# --- GUARDRAILS & AI SETUP ---
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.1) # Or gemini-2.5-flash
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.1) 
 
-# 1. Prompt to understand follow-up questions
 contextualize_q_prompt = ChatPromptTemplate.from_messages([
     ("system", "Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question. Do NOT answer it, just reformulate it."),
     MessagesPlaceholder("chat_history"),
@@ -74,7 +67,6 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages([
 ])
 history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
 
-# 2. Guardrailed QA Prompt
 qa_prompt = ChatPromptTemplate.from_messages([
     ("system", """You are an official GitLab internal assistant. 
     GUARDRAIL: You must ONLY answer questions based on the provided context. 
@@ -88,7 +80,6 @@ qa_prompt = ChatPromptTemplate.from_messages([
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-# --- CHAT UI WITH MEMORY ---
 if "messages" not in st.session_state:
     st.session_state.messages =[{"role": "assistant", "content": "Welcome! I can answer questions about GitLab's Values, Remote Work Benefits, and AI Strategy. How can I help?"}]
 if "chat_history" not in st.session_state:
@@ -106,20 +97,16 @@ if user_input := st.chat_input("Ask about GitLab's remote work or values..."):
     with st.chat_message("assistant"):
         with st.spinner("Searching Handbook..."):
             try:
-                # Get response
                 result = rag_chain.invoke({"input": user_input, "chat_history": st.session_state.chat_history})
                 answer = result["answer"]
                 
-                # Bonus Transparency: Show Sources
                 sources = set([doc.metadata.get('source', 'Unknown') for doc in result['context']])
                 source_text = "\n\n**Sources:**\n" + "\n".join([f"- {s}" for s in sources])
                 full_response = answer + source_text
                 
                 st.markdown(full_response)
                 
-                # Save to memory
                 st.session_state.messages.append({"role": "assistant", "content": full_response})
                 st.session_state.chat_history.extend([HumanMessage(content=user_input), AIMessage(content=answer)])
             except Exception as e:
-                # Bonus UX: Error handling
                 st.error("I'm sorry, I encountered an error connecting to the AI. Please try again.")
