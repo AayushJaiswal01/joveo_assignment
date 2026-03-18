@@ -17,9 +17,15 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 
+# --- CONFIGURATION ---
 os.environ["USER_AGENT"] = "MyGitLabChatBot/1.0"
-GEMINI_API_KEY = os.environ.get("GOOGLE_API_KEY")
-os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY
+
+# Securely pull the key from Streamlit Secrets
+if "GOOGLE_API_KEY" in st.secrets:
+    os.environ["GOOGLE_API_KEY"] = st.secrets["GOOGLE_API_KEY"]
+else:
+    st.error("API Key not found! Please add it to Streamlit Secrets.")
+    st.stop()
 
 GITLAB_URLS =[
     "https://about.gitlab.com/handbook/values/",
@@ -32,7 +38,7 @@ st.set_page_config(page_title="GitLab Employee Assistant", page_icon="🦊", lay
 with st.sidebar:
     st.image("https://about.gitlab.com/images/press/logo/png/gitlab-icon-rgb.png", width=50)
     st.title("GitLab Assistant")
-    st.markdown("Built with 💙 using Streamlit & Gemini")
+    st.markdown("Built using Streamlit & Gemini")
     if st.button("🗑️ Clear Conversation"):
         st.session_state.messages =[]
         st.session_state.chat_history =[]
