@@ -64,7 +64,7 @@ def get_vector_store():
 vectorstore = get_vector_store()
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0.1) 
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.1) 
 
 contextualize_q_prompt = ChatPromptTemplate.from_messages([
     ("system", "Given a chat history and the latest user question which might reference context in the chat history, formulate a standalone question. Do NOT answer it, just reformulate it."),
