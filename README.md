@@ -15,7 +15,7 @@ You can access the deployed version of this chatbot here:
 ## Tech Stack
 * **Frontend:** Streamlit
 * **Framework:** LangChain (LCEL)
-* **LLM:** Google Gemini (1.5 Flash)
+* **LLM:** Google Gemini (2.5 Flash)
 * **Embeddings:** HuggingFace (`all-MiniLM-L6-v2`)
 * **Vector Database:** FAISS
 
